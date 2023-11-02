@@ -13,17 +13,20 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class CowCommand implements CommandExecutor {
-    public static ArrayList<Entity> Cows = new ArrayList<Entity>();
+    public static Map<UUID, ArrayList<Cow>> Cows = new HashMap<>();
+
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
         if(!(sender instanceof Player)){
             sender.sendMessage("You must be a player!");
+            return false;
+        }
+        Player player = (Player)sender;
+        if(!player.hasPermission("cowbomb.plantcow")){
             return false;
         }
         ItemStack detonator = new ItemStack(Material.STICK);
@@ -34,17 +37,19 @@ public class CowCommand implements CommandExecutor {
         ));
         meta.getPersistentDataContainer().set(Keys.CUSTOM_DETONATOR, PersistentDataType.BOOLEAN, true);
         detonator.setItemMeta(meta);
-        Player player = (Player)sender;
-        if(Cows.isEmpty())
+        ItemStack planter = new ItemStack(Material.GUNPOWDER);
+        ItemMeta planterMeta = planter.getItemMeta();
+        planterMeta.setDisplayName(ChatColor.RED + "Cow Planter");
+        planterMeta.setLore(Arrays.asList(
+                "Right click on block to plant Cow bomb!"
+        ));
+        planterMeta.getPersistentDataContainer().set(Keys.CUSTOM_PLANTER, PersistentDataType.BOOLEAN, true);
+        planter.setItemMeta(planterMeta);
+        if(!Cows.containsKey(player.getUniqueId())) {
             player.getInventory().addItem(detonator);
-        Cow cow = player.getWorld().spawn(player.getLocation(), Cow.class);
-        cow.getPersistentDataContainer().set(Keys.CUSTOM_COW, PersistentDataType.BOOLEAN, true);
-        if(!args[0].equals("sneaky"))
-            cow.setCustomName(ChatColor.BLUE + "Just a cow...");
-        cow.setCustomNameVisible(true);
-        Cows.add(cow);
+            player.getInventory().addItem(planter);
+        }
         return true;
-
 
     }
 }

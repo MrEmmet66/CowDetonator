@@ -6,4 +6,5 @@ commands:
   cowbomb:
     description: Plant a cow
     usage: /cowbomb [sneaky]
+    permission: cowbomb.plantcow
 
